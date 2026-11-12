@@ -1,0 +1,17 @@
+assets/lucky/blockstates/lucky_block.json
+assets/lucky/lang/en_US.lang
+assets/lucky/models/block/lucky_block.json
+assets/lucky/models/item/lucky_block.json
+assets/lucky/models/item/lucky_bow.json
+assets/lucky/models/item/lucky_bow_pulling_0.json
+assets/lucky/models/item/lucky_bow_pulling_1.json
+assets/lucky/models/item/lucky_bow_pulling_2.json
+assets/lucky/models/item/lucky_potion.json
+assets/lucky/models/item/lucky_sword.json
+assets/lucky/textures/blocks/lucky_block.png
+assets/lucky/textures/items/lucky_bow_pulling_0.png
+assets/lucky/textures/items/lucky_bow_pulling_1.png
+assets/lucky/textures/items/lucky_bow_pulling_2.png
+assets/lucky/textures/items/lucky_bow_standby.png
+assets/lucky/textures/items/lucky_potion.png
+assets/lucky/textures/items/lucky_sword.png

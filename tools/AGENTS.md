@@ -1,0 +1,24 @@
+# LuckyLegacyAddon - shared instructions for fixer agents
+
+Project: `D:\OldVersionsPORT\LuckyLegacyAddon` (modid `luckylegacyaddon`, pkg `com.electrifiedded.luckylegacyaddon`, Cleanroom 1.12.2, Java 25 toolchain).
+Goal: every legacy (1.8.9) Lucky Block add-on in `run/addons-src/` (originals, never edit them) must load on **Lucky Block 1.12.2 v2.0 (mod `lucky`, v7.6.0)** with ZERO errors in the log.
+Lucky Block is ALL RIGHTS RESERVED: never modify/repack/copy its jar into outputs; `libs/lucky-block-forge-1.12.2-2.0.jar` is compile/run dependency only. Reading it (decompiled) to learn its format is allowed and encouraged.
+ArchaicLib (`D:\OldVersionsPORT\ArchaicLib`) may be used for generic porting helpers, but must NOT get Lucky-Block-specific code.
+
+## How it works
+`LegacyLoadingPlugin` (coremod, runs before mods) calls `convert/AddonConverter.run(mcDir)`: moves raw add-ons from `<mc>/addons/lucky_block/` to `<mc>/addons/lucky_legacy/`, converts them in memory (`VirtualAddon` -> `Converted`: `Map<String,byte[]> files`, helpers `text(path)`/`putText(path,str)`) and writes converted zips to `addons/lucky_block/`, where Lucky 1.12.2 reads them (resource files at the zip root: `drops.txt`, `bow_drops.txt`, `sword_drops.txt`, `potion_drops.txt`, `luck_crafting.txt`, `natural_gen.txt`, `properties.txt`, `recipes.txt`, `structures.txt`, `structures/*.schematic`, `plugin_init.txt`, `assets/...`).
+`convert/LegacyFixer` already: finds the root folder, strips BOM, converts to UTF-8 + LF, then runs `convert/fixers/*Fixer` in this order: DropSyntaxFixer, ValueFixer, StructureFixer, ResourceFixer. Each fixer is a `Fixer` (`name()`, `fix(Converted)`); must be idempotent, never throw, and log what it changed via `AddonConverter.log` (package-private -> use System.out.println("[LuckyLegacyAddon] ...") in fixers).
+Rule: fix as GENERICALLY as possible (rules by pattern), not by hardcoding one addon's line, but hardcoded patches are acceptable for single author typos. Preserve intent (a drop should still do what the author meant). If a drop is hopeless, drop only that line and log it.
+
+## Lucky source for reference
+Decompiled Lucky 1.12.2: `C:\Users\ELECTR~1\AppData\Local\Temp\claude\0634164721a41eb5\d326696a-0939-4582-8da9-c5dea1805740\scratchpad\lb112\mod\lucky\...` (SRG names func_/field_). Decompiled 1.8.0 v2.0 jar: re-decompile `C:\Users\ElectrifiedDed\Downloads\lucky-block-forge-1.8.0-2.0.jar` with Vineflower (`java -jar C:\Users\ElectrifiedDed\.gradle\caches\modules-2\files-2.1\org.vineflower\vineflower\1.11.2\f02c1f554d5bd9cc0fd74d4977efba364d85e739\vineflower-1.11.2.jar in.jar outdir`) into your own scratch dir if you need to diff 1.8 vs 1.12 parsers. Original 1.8.9 Lucky 7.0.2 and Loot++ 1.8.9 are inside `C:\Users\ElectrifiedDed\Downloads\Lucky blocky commotion.zip` (folder names are GBK mojibake: extract with python zipfile by index and `endswith`).
+
+## Working copy + testing (IMPORTANT, agents run in parallel)
+1. Do NOT work in the main project dir. Copy it: `robocopy D:\OldVersionsPORT\LuckyLegacyAddon D:\OldVersionsPORT\_agents\<yourname> /E /XD run build` (keep `.gradle`, `libs`). Work and build there (`./gradlew build --no-daemon -q`).
+2. Own server ports: in `<copy>/run/server/server.properties` use `server-port=<P>` / `rcon.port=<P+1>` / `rcon.password=test` / `online-mode=false` / `enable-rcon=true`, `eula.txt` = `eula=true` (use P = 26000 + 10*N with the number given in your task). Adjust `tools/rcon.py` default port and `tools/test_addon.sh` yourself in your copy. Test one or several add-ons: `tools/test_addon.sh run/addons-src/<file>...` (copy originals from main `run/addons-src` into your copy's `run/addons-src`). The script starts `gradlew runServer`, waits, stops via RCON, log in `run/logs-test/`.
+3. Success criterion: in the log, no `[STDERR]` lines from `mod.lucky.*` classes (and no stack traces) for the add-ons in your scope, and the server reaches `Done (`. Note Lucky logs with `Lucky Block: Error ...`. Re-run until clean. (A run with all 34 add-ons produces 67k stderr lines and may exceed the script's 6 min wait; test the affected add-ons only.)
+4. NEVER force-kill processes (no Stop-Process/taskkill/pkill). Stop only YOUR server via RCON `stop`. Do not touch other agents' dirs or the main project dir.
+5. When finished: leave your final files in your copy and report: (a) exact list of files you created/changed (only inside your assigned files, see task), (b) what error classes you fixed and how, (c) what remains and why. The coordinator copies your files into the main project.
+
+## Ownership (to avoid merge conflicts)
+Each agent edits ONLY its own file(s) listed in its task (new helper classes in its own subpackage are fine). Do not edit LegacyFixer, AddonConverter, VirtualAddon, LuckyLegacyAddon.java, build.gradle, gradle.properties unless your task says so.

@@ -1,0 +1,31 @@
+repositories {
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+    }
+    maven {
+        name = 'CleanroomCurseMaven'
+        url = 'https://curse.cleanroommc.com'
+    }
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+    }
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    if (enable_lwjglx.toBoolean()) {
+        compileOnly "com.cleanroommc:lwjglx:1.0.0"
+    }
+    modImplementation files("${rootDir}/../ArchaicLib/build/libs/archaiclib-${archaiclib_version}-dev.jar")
+    modImplementation files("${rootDir}/libs/lucky-block-forge-1.12.2-2.0.jar")
+    contain 'com.github.junrar:junrar:7.5.5'
+    contain 'org.slf4j:slf4j-api:1.7.36'
+
+
+
+
+
+}
